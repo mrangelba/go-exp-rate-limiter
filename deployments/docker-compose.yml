@@ -1,0 +1,26 @@
+version: "3.8"
+services:
+  redis:
+    image: redis:latest
+    ports:
+      - 6379:6379
+    networks:
+      - service
+
+  server-rate-limiter:
+    build:
+      dockerfile: build/development/Dockerfile
+      context: ../
+    working_dir: /app
+    ports:
+      - 8080:8080
+    volumes:
+      - ../:/app
+    networks:
+      - service
+
+networks:
+  service:
+    name: go_service
+
+    
