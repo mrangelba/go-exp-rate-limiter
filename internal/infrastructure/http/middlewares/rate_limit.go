@@ -4,17 +4,20 @@ import (
 	"context"
 	"net/http"
 	"strings"
+	"sync"
 
 	"github.com/mrangelba/go-exp-rate-limiter/internal/domain/usecases"
 )
 
 type rateLimiter struct {
-	uc usecases.RateLimitUseCase
+	uc    usecases.RateLimitUseCase
+	mutex *sync.Mutex
 }
 
 func NewRateLimiter(uc usecases.RateLimitUseCase) *rateLimiter {
 	return &rateLimiter{
-		uc: uc,
+		uc:    uc,
+		mutex: &sync.Mutex{},
 	}
 }
 
@@ -41,6 +44,10 @@ func (m *rateLimiter) Handler(next http.Handler) http.Handler {
 }
 
 func (m *rateLimiter) checkLimitAddHeaders(ctx context.Context, w http.ResponseWriter, ip string) bool {
+	m.mutex.Lock()
+
+	defer m.mutex.Unlock()
+
 	hasLimit := m.uc.VerifyLimit(ctx, ip)
 	headers := m.uc.GetHttpHeaders(ctx, ip)
 
