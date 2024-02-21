@@ -18,6 +18,19 @@ docker-compose -f deployments/docker-compose.yml up
 make build-pkg
 ```
 
+### Executar stress-test
+Execute cada comando em uma janela separada do terminal
+```sh
+make run
+
+docker run --network=host --rm mrangelba/go-exp-stress-test --url http://localhost:8080 --concurrency 50 --requests 5000
+```
+
+### Verificar cobertura de testes
+```sh
+make test-coverage
+```
+
 ## Arquivo de configuração `.env`
 Por exemplo, para definir todas as opções disponíveis no .env use:
 
@@ -78,6 +91,7 @@ Header da resposta
 |`Ratelimit-Limit`|Limite total de requests|
 |`Ratelimit-Remaining`|Limite de requests restante|
 |`Ratelimit-Reset`|Tempo para reiniciar|
+
 
 ## Adicionando o middleware ao seu router
 
@@ -158,6 +172,53 @@ func main() {
 }
 ```
 
+### Saída do stress-test
+
+```sh
+----------------------------------------------------------------------
+Relatório de execução
+----------------------------------------------------------------------
+Tempo total gasto na execução: 4.453823378s
+Quantidade total de requests realizados: 5000
+----------------------------------------------------------------------
+Quantidade de requests com status HTTP 200: 20
+----------------------------------------------------------------------
+Quantidade de requests com status HTTP 429: 4980
+----------------------------------------------------------------------
+```
+
+### Saída da cobertura de testes
+```sh
+coverage: 100.0% of statements in ./...
+ok      github.com/mrangelba/go-exp-rate-limiter/internal/infrastructure/utils  1.069s  coverage: 100.0% of statements in ./...
+go tool cover -html coverage/coverage.out -o coverage/coverage.html
+go tool cover -func coverage/coverage.out
+github.com/mrangelba/go-exp-rate-limiter/internal/domain/entities/rate_limiter.go:13:                           MarshalBinary           100.0%
+github.com/mrangelba/go-exp-rate-limiter/internal/domain/entities/rate_limiter.go:17:                           UnmarshalBinary         100.0%
+github.com/mrangelba/go-exp-rate-limiter/internal/domain/usecases/rate_limit_usecase.go:26:                     NewRateLimitUseCase     100.0%
+github.com/mrangelba/go-exp-rate-limiter/internal/domain/usecases/rate_limit_usecase.go:33:                     VerifyLimit             100.0%
+github.com/mrangelba/go-exp-rate-limiter/internal/domain/usecases/rate_limit_usecase.go:82:                     validateCacheLimit      100.0%
+github.com/mrangelba/go-exp-rate-limiter/internal/domain/usecases/rate_limit_usecase.go:102:                    GetHttpHeaders          100.0%
+github.com/mrangelba/go-exp-rate-limiter/internal/drivers/cache/redis/client.go:15:                             GetClient               100.0%
+github.com/mrangelba/go-exp-rate-limiter/internal/drivers/cache/redis/client.go:23:                             connectRedis            100.0%
+github.com/mrangelba/go-exp-rate-limiter/internal/drivers/config/config.go:17:                                  GetConfig               100.0%
+github.com/mrangelba/go-exp-rate-limiter/internal/drivers/config/config.go:33:                                  String                  100.0%
+github.com/mrangelba/go-exp-rate-limiter/internal/drivers/config/rate_limiter/rate_limiter_config.go:33:        GetRateLimiterConfig    100.0%
+github.com/mrangelba/go-exp-rate-limiter/internal/drivers/config/redis/redis_config.go:14:                      GetRedisConfig          100.0%
+github.com/mrangelba/go-exp-rate-limiter/internal/infrastructure/http/middlewares/rate_limit.go:17:             NewRateLimiter          100.0%
+github.com/mrangelba/go-exp-rate-limiter/internal/infrastructure/http/middlewares/rate_limit.go:24:             Handler                 100.0%
+github.com/mrangelba/go-exp-rate-limiter/internal/infrastructure/http/middlewares/rate_limit.go:46:             checkLimitAddHeaders    100.0%
+github.com/mrangelba/go-exp-rate-limiter/internal/infrastructure/http/middlewares/rate_limit.go:65:             getIPs                  100.0%
+github.com/mrangelba/go-exp-rate-limiter/internal/infrastructure/strategies/rate_limit_in_memory.go:16:         NewRateLimitInMemory    100.0%
+github.com/mrangelba/go-exp-rate-limiter/internal/infrastructure/strategies/rate_limit_in_memory.go:22:         Set                     100.0%
+github.com/mrangelba/go-exp-rate-limiter/internal/infrastructure/strategies/rate_limit_in_memory.go:27:         Get                     100.0%
+github.com/mrangelba/go-exp-rate-limiter/internal/infrastructure/strategies/rate_limit_redis.go:20:             NewRateLimitRedis       100.0%
+github.com/mrangelba/go-exp-rate-limiter/internal/infrastructure/strategies/rate_limit_redis.go:26:             Set                     100.0%
+github.com/mrangelba/go-exp-rate-limiter/internal/infrastructure/strategies/rate_limit_redis.go:37:             Get                     100.0%
+github.com/mrangelba/go-exp-rate-limiter/internal/infrastructure/strategies/rate_limit_strategy.go:9:           GetCacheStrategy        100.0%
+github.com/mrangelba/go-exp-rate-limiter/internal/infrastructure/utils/gin.go:9:                                MiddlewareToGin         100.0%
+total:                                                                                                          (statements)            100.0%
+```
 
 ## Requisitos do Desafio
 
