@@ -1,0 +1,687 @@
+
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+		<title>entities: Go Coverage Report</title>
+		<style>
+			body {
+				background: black;
+				color: rgb(80, 80, 80);
+			}
+			body, pre, #legend span {
+				font-family: Menlo, monospace;
+				font-weight: bold;
+			}
+			#topbar {
+				background: black;
+				position: fixed;
+				top: 0; left: 0; right: 0;
+				height: 42px;
+				border-bottom: 1px solid rgb(80, 80, 80);
+			}
+			#content {
+				margin-top: 50px;
+			}
+			#nav, #legend {
+				float: left;
+				margin-left: 10px;
+			}
+			#legend {
+				margin-top: 12px;
+			}
+			#nav {
+				margin-top: 10px;
+			}
+			#legend span {
+				margin: 0 5px;
+			}
+			.cov0 { color: rgb(192, 0, 0) }
+.cov1 { color: rgb(128, 128, 128) }
+.cov2 { color: rgb(116, 140, 131) }
+.cov3 { color: rgb(104, 152, 134) }
+.cov4 { color: rgb(92, 164, 137) }
+.cov5 { color: rgb(80, 176, 140) }
+.cov6 { color: rgb(68, 188, 143) }
+.cov7 { color: rgb(56, 200, 146) }
+.cov8 { color: rgb(44, 212, 149) }
+.cov9 { color: rgb(32, 224, 152) }
+.cov10 { color: rgb(20, 236, 155) }
+
+		</style>
+	</head>
+	<body>
+		<div id="topbar">
+			<div id="nav">
+				<select id="files">
+				
+				<option value="file0">github.com/mrangelba/go-exp-rate-limiter/internal/domain/entities/rate_limiter.go (100.0%)</option>
+				
+				<option value="file1">github.com/mrangelba/go-exp-rate-limiter/internal/domain/usecases/rate_limit_usecase.go (100.0%)</option>
+				
+				<option value="file2">github.com/mrangelba/go-exp-rate-limiter/internal/drivers/cache/redis/client.go (100.0%)</option>
+				
+				<option value="file3">github.com/mrangelba/go-exp-rate-limiter/internal/drivers/config/config.go (100.0%)</option>
+				
+				<option value="file4">github.com/mrangelba/go-exp-rate-limiter/internal/drivers/config/rate_limiter/rate_limiter_config.go (100.0%)</option>
+				
+				<option value="file5">github.com/mrangelba/go-exp-rate-limiter/internal/drivers/config/redis/redis_config.go (100.0%)</option>
+				
+				<option value="file6">github.com/mrangelba/go-exp-rate-limiter/internal/infrastructure/http/middlewares/rate_limit.go (100.0%)</option>
+				
+				<option value="file7">github.com/mrangelba/go-exp-rate-limiter/internal/infrastructure/strategies/rate_limit_in_memory.go (100.0%)</option>
+				
+				<option value="file8">github.com/mrangelba/go-exp-rate-limiter/internal/infrastructure/strategies/rate_limit_redis.go (100.0%)</option>
+				
+				<option value="file9">github.com/mrangelba/go-exp-rate-limiter/internal/infrastructure/strategies/rate_limit_strategy.go (100.0%)</option>
+				
+				<option value="file10">github.com/mrangelba/go-exp-rate-limiter/internal/infrastructure/utils/gin.go (100.0%)</option>
+				
+				</select>
+			</div>
+			<div id="legend">
+				<span>not tracked</span>
+			
+				<span class="cov0">no coverage</span>
+				<span class="cov1">low coverage</span>
+				<span class="cov2">*</span>
+				<span class="cov3">*</span>
+				<span class="cov4">*</span>
+				<span class="cov5">*</span>
+				<span class="cov6">*</span>
+				<span class="cov7">*</span>
+				<span class="cov8">*</span>
+				<span class="cov9">*</span>
+				<span class="cov10">high coverage</span>
+			
+			</div>
+		</div>
+		<div id="content">
+		
+		<pre class="file" id="file0" style="display: none">package entities
+
+import "encoding/json"
+
+type RateLimiter struct {
+        Key       string `json:"key"`
+        Requests  int    `json:"requests"`
+        Every     int    `json:"every"`
+        Remaining int    `json:"remaining"`
+        Reset     int64  `json:"reset"`
+}
+
+func (r RateLimiter) MarshalBinary() ([]byte, error) <span class="cov10" title="3">{
+        return json.Marshal(r)
+}</span>
+
+func (r *RateLimiter) UnmarshalBinary(data []byte) error <span class="cov10" title="3">{
+        return json.Unmarshal(data, r)
+}</span>
+</pre>
+		
+		<pre class="file" id="file1" style="display: none">package usecases
+
+import (
+        "context"
+        "fmt"
+        "log"
+        "slices"
+        "time"
+
+        "github.com/mrangelba/go-exp-rate-limiter/internal/domain"
+        "github.com/mrangelba/go-exp-rate-limiter/internal/domain/entities"
+        "github.com/mrangelba/go-exp-rate-limiter/internal/drivers/config"
+        "github.com/mrangelba/go-exp-rate-limiter/internal/drivers/config/rate_limiter"
+)
+
+type RateLimitUseCase interface {
+        GetHttpHeaders(ctx context.Context, key string) map[string]string
+        VerifyLimit(ctx context.Context, key string) bool
+}
+
+type rateLimitUseCase struct {
+        config config.Config
+        cache  domain.RateLimitCache
+}
+
+func NewRateLimitUseCase(config config.Config, cache domain.RateLimitCache) RateLimitUseCase <span class="cov10" title="7">{
+        return &amp;rateLimitUseCase{
+                config: config,
+                cache:  cache,
+        }
+}</span>
+
+func (uc *rateLimitUseCase) VerifyLimit(ctx context.Context, key string) bool <span class="cov10" title="7">{
+        rate, err := uc.cache.Get(ctx, key)
+
+        if err != nil </span><span class="cov4" title="2">{
+                every := uc.config.RateLimiter.Default.Every
+                requests := uc.config.RateLimiter.Default.Requests
+
+                if slices.ContainsFunc(uc.config.RateLimiter.Token, func(s rate_limiter.Token) bool </span><span class="cov4" title="2">{
+                        return s.Token == key
+                }</span>) <span class="cov1" title="1">{
+                        index := slices.IndexFunc(uc.config.RateLimiter.Token, func(s rate_limiter.Token) bool </span><span class="cov1" title="1">{
+                                return s.Token == key
+                        }</span>)
+
+                        <span class="cov1" title="1">every = uc.config.RateLimiter.Token[index].Every
+                        requests = uc.config.RateLimiter.Token[index].Requests</span>
+                } else<span class="cov1" title="1"> if slices.ContainsFunc(uc.config.RateLimiter.IP, func(s rate_limiter.IP) bool </span><span class="cov1" title="1">{
+                        return s.IP == key
+                }</span>) <span class="cov1" title="1">{
+                        index := slices.IndexFunc(uc.config.RateLimiter.IP, func(s rate_limiter.IP) bool </span><span class="cov1" title="1">{
+                                return s.IP == key
+                        }</span>)
+
+                        <span class="cov1" title="1">every = uc.config.RateLimiter.IP[index].Every
+                        requests = uc.config.RateLimiter.IP[index].Requests</span>
+                }
+
+                <span class="cov4" title="2">uc.cache.Set(ctx,
+                        entities.RateLimiter{
+                                Key:       key,
+                                Every:     every,
+                                Remaining: requests,
+                                Requests:  0,
+                                Reset:     time.Now().Add(time.Duration(every) * time.Second).Unix(),
+                        }, time.Duration(every)*time.Second)
+
+                return uc.VerifyLimit(ctx, key)</span>
+        }
+
+        <span class="cov8" title="5">limit, err := uc.validateCacheLimit(ctx, rate)
+
+        if err != nil </span><span class="cov1" title="1">{
+                log.Println(err)
+                return false
+        }</span>
+
+        <span class="cov7" title="4">return limit</span>
+}
+
+func (uc *rateLimitUseCase) validateCacheLimit(ctx context.Context, rate *entities.RateLimiter) (bool, error) <span class="cov8" title="5">{
+        if rate.Remaining &lt;= 0 &amp;&amp; rate.Every &gt; 0 </span><span class="cov1" title="1">{
+                return false, nil
+        }</span>
+
+        <span class="cov7" title="4">rate.Requests++
+
+        if rate.Every &gt; 0 &amp;&amp; rate.Remaining &gt; 0 </span><span class="cov7" title="4">{
+                rate.Remaining--
+        }</span>
+
+        <span class="cov7" title="4">every := (time.Duration(rate.Reset) - time.Duration(time.Now().Unix())) * time.Second
+
+        if err := uc.cache.Set(ctx, *rate, every); err != nil </span><span class="cov1" title="1">{
+                return false, err
+        }</span>
+
+        <span class="cov6" title="3">return true, nil</span>
+}
+
+func (uc *rateLimitUseCase) GetHttpHeaders(ctx context.Context, key string) map[string]string <span class="cov4" title="2">{
+        rate, err := uc.cache.Get(ctx, key)
+        if err != nil </span><span class="cov1" title="1">{
+                return map[string]string{}
+        }</span>
+
+        <span class="cov1" title="1">every := (time.Duration(rate.Reset) - time.Duration(time.Now().Unix())) * time.Second
+
+        headers := map[string]string{
+                "Ratelimit-Limit":     fmt.Sprintf("%v", rate.Requests),
+                "Ratelimit-Remaining": fmt.Sprintf("%v", rate.Remaining),
+                "Ratelimit-Reset":     fmt.Sprintf("%v", every),
+        }
+
+        return headers</span>
+}
+</pre>
+		
+		<pre class="file" id="file2" style="display: none">package redis
+
+import (
+        "fmt"
+
+        "sync"
+
+        "github.com/mrangelba/go-exp-rate-limiter/internal/drivers/config"
+        "github.com/redis/go-redis/v9"
+)
+
+var once sync.Once
+var instance *redis.Client
+
+func GetClient() *redis.Client <span class="cov10" title="4">{
+        once.Do(func() </span><span class="cov5" title="2">{
+                instance = connectRedis()
+        }</span>)
+
+        <span class="cov10" title="4">return instance</span>
+}
+
+func connectRedis() *redis.Client <span class="cov8" title="3">{
+        cfg := config.GetConfig().Redis
+
+        client := redis.NewClient(
+                &amp;redis.Options{
+                        Addr:     fmt.Sprintf("%s:%d", cfg.Host, cfg.Port),
+                        Password: cfg.Password,
+                        DB:       cfg.DB,
+                })
+
+        return client
+}</span>
+</pre>
+		
+		<pre class="file" id="file3" style="display: none">package config
+
+import (
+        "encoding/json"
+
+        "github.com/mrangelba/go-exp-rate-limiter/internal/drivers/config/rate_limiter"
+        "github.com/mrangelba/go-exp-rate-limiter/internal/drivers/config/redis"
+        "github.com/spf13/viper"
+)
+
+type Config struct {
+        Cache       string                         `json:"cache"`
+        Redis       redis.RedisConfig              `json:"redis"`
+        RateLimiter rate_limiter.RateLimiterConfig `json:"rate_limiter"`
+}
+
+func GetConfig() Config <span class="cov10" title="5">{
+        // set config file
+        viper.SetConfigFile(".env")
+        viper.AutomaticEnv()
+        viper.ReadInConfig()
+
+        // set default value
+        viper.SetDefault("CACHE", "inmemory")
+
+        return Config{
+                Cache:       viper.GetString("CACHE"),
+                Redis:       redis.GetRedisConfig(),
+                RateLimiter: rate_limiter.GetRateLimiterConfig(),
+        }
+}</span>
+
+func (r Config) String() string <span class="cov1" title="1">{
+        data, _ := json.Marshal(r)
+
+        return string(data)
+}</span>
+</pre>
+		
+		<pre class="file" id="file4" style="display: none">package rate_limiter
+
+import (
+        "fmt"
+
+        "github.com/spf13/viper"
+)
+
+type RateLimiterConfig struct {
+        Default Default `json:"default"`
+        IP      []IP    `json:"ip,omitempty"`
+        Token   []Token `json:"token,omitempty"`
+}
+
+type Default struct {
+        Requests int `json:"requests,omitempty"`
+        Every    int `json:"every,omitempty"`
+}
+
+type IP struct {
+        IP       string `json:"ip,omitempty"`
+        Requests int    `json:"requests,omitempty"`
+        Every    int    `json:"every,omitempty"`
+}
+
+type Token struct {
+        Token    string `json:"token,omitempty"`
+        Requests int    `json:"requests,omitempty"`
+        Every    int    `json:"every,omitempty"`
+}
+
+// GetRateLimiterConfig returns the rate limiter configuration
+func GetRateLimiterConfig() RateLimiterConfig <span class="cov9" title="6">{
+        // set config file
+        viper.SetConfigFile(".env")
+        viper.SetConfigType("env")
+        viper.AutomaticEnv()
+
+        // set default value
+        viper.SetDefault("RATE_LIMIT_DEFAULT_REQUESTS", 10)
+        viper.SetDefault("RATE_LIMIT_DEFAULT_EVERY", 60)
+
+        // get config default
+        rateLimiterConfig := RateLimiterConfig{
+                Default: Default{
+                        Requests: viper.GetInt("RATE_LIMIT_DEFAULT_REQUESTS"),
+                        Every:    viper.GetInt("RATE_LIMIT_DEFAULT_EVERY"),
+                },
+        }
+
+        for i := 0; ; i++ </span><span class="cov10" title="7">{
+                ipKey := fmt.Sprintf("RATE_LIMIT_IP_%d", i)
+
+                if !viper.IsSet(ipKey) </span><span class="cov9" title="6">{
+                        break</span>
+                }
+
+                <span class="cov1" title="1">ip := viper.GetString(ipKey)
+                requests := viper.GetInt(fmt.Sprintf("RATE_LIMIT_IP_%d_REQUESTS", i))
+                every := viper.GetInt(fmt.Sprintf("RATE_LIMIT_IP_%d_EVERY", i))
+
+                rateLimiterConfig.IP = append(rateLimiterConfig.IP, IP{
+                        IP:       ip,
+                        Requests: requests,
+                        Every:    every,
+                })</span>
+        }
+
+        <span class="cov9" title="6">for i := 0; ; i++ </span><span class="cov10" title="7">{
+                tokenKey := fmt.Sprintf("RATE_LIMIT_TOKEN_%d", i)
+
+                if !viper.IsSet(tokenKey) </span><span class="cov9" title="6">{
+                        break</span>
+                }
+
+                <span class="cov1" title="1">token := viper.GetString(tokenKey)
+                requests := viper.GetInt(fmt.Sprintf("RATE_LIMIT_TOKEN_%d_REQUESTS", i))
+                every := viper.GetInt(fmt.Sprintf("RATE_LIMIT_TOKEN_%d_EVERY", i))
+
+                rateLimiterConfig.Token = append(rateLimiterConfig.Token, Token{
+                        Token:    token,
+                        Requests: requests,
+                        Every:    every,
+                })</span>
+        }
+
+        <span class="cov9" title="6">return rateLimiterConfig</span>
+}
+</pre>
+		
+		<pre class="file" id="file5" style="display: none">package redis
+
+import (
+        "github.com/spf13/viper"
+)
+
+type RedisConfig struct {
+        Host     string `json:"host,omitempty" env:"REDIS_HOST"`
+        Password string `json:"password,omitempty" env:"REDIS_PASSWORD"`
+        Port     int    `json:"port,omitempty" env:"REDIS_PORT"`
+        DB       int    `json:"db,omitempty" env:"REDIS_DB"`
+}
+
+func GetRedisConfig() RedisConfig <span class="cov10" title="6">{
+        // set config file
+        viper.SetConfigFile(".env")
+        viper.AutomaticEnv()
+        viper.ReadInConfig()
+
+        // set default value
+        viper.SetDefault("REDIS_HOST", "localhost")
+        viper.SetDefault("REDIS_PASSWORD", "")
+        viper.SetDefault("REDIS_DB", 0)
+        viper.SetDefault("REDIS_PORT", 6379)
+
+        // get config
+        redisConfig := RedisConfig{
+                Host:     viper.GetString("REDIS_HOST"),
+                Password: viper.GetString("REDIS_PASSWORD"),
+                DB:       viper.GetInt("REDIS_DB"),
+                Port:     viper.GetInt("REDIS_PORT"),
+        }
+
+        return redisConfig
+}</span>
+</pre>
+		
+		<pre class="file" id="file6" style="display: none">package middlewares
+
+import (
+        "context"
+        "net/http"
+        "strings"
+
+        "github.com/mrangelba/go-exp-rate-limiter/internal/domain/usecases"
+)
+
+type rateLimiter struct {
+        uc usecases.RateLimitUseCase
+}
+
+func NewRateLimiter(uc usecases.RateLimitUseCase) *rateLimiter <span class="cov4" title="3">{
+        return &amp;rateLimiter{
+                uc: uc,
+        }
+}</span>
+
+func (m *rateLimiter) Handler(next http.Handler) http.Handler <span class="cov7" title="7">{
+        return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) </span><span class="cov7" title="7">{
+                apiKey := r.Header.Get("API_KEY")
+
+                if apiKey != "" </span><span class="cov3" title="2">{
+                        if !m.checkLimitAddHeaders(r.Context(), w, apiKey) </span><span class="cov1" title="1">{
+                                return
+                        }</span>
+                } else<span class="cov6" title="5"> {
+                        ips := getIPs(r)
+
+                        for _, ip := range ips </span><span class="cov6" title="6">{
+                                if !m.checkLimitAddHeaders(r.Context(), w, ip) </span><span class="cov1" title="1">{
+                                        return
+                                }</span>
+                        }
+                }
+
+                <span class="cov6" title="5">next.ServeHTTP(w, r)</span>
+        })
+}
+
+func (m *rateLimiter) checkLimitAddHeaders(ctx context.Context, w http.ResponseWriter, ip string) bool <span class="cov7" title="8">{
+        hasLimit := m.uc.VerifyLimit(ctx, ip)
+        headers := m.uc.GetHttpHeaders(ctx, ip)
+
+        for key, value := range headers </span><span class="cov10" title="16">{
+                w.Header().Add(key, value)
+        }</span>
+
+        <span class="cov7" title="8">if !hasLimit </span><span class="cov3" title="2">{
+                http.Error(w, "you have reached the maximum number of requests or actions allowed within a certain time frame", http.StatusTooManyRequests)
+        }</span>
+
+        <span class="cov7" title="8">return hasLimit</span>
+}
+
+func getIPs(r *http.Request) []string <span class="cov6" title="5">{
+        forwardedFor := r.Header.Get("X-Forwarded-For")
+        if forwardedFor != "" </span><span class="cov1" title="1">{
+                ips := strings.Split(forwardedFor, ",")
+
+                if len(ips) &gt; 0 </span><span class="cov1" title="1">{
+                        return ips
+                }</span>
+        }
+
+        <span class="cov5" title="4">realIP := r.Header.Get("X-Real-IP")
+        if realIP != "" </span><span class="cov1" title="1">{
+                return []string{realIP}
+        }</span>
+
+        <span class="cov4" title="3">ips := []string{strings.Split(r.RemoteAddr, ":")[0]}
+
+        return ips</span>
+}
+</pre>
+		
+		<pre class="file" id="file7" style="display: none">package strategies
+
+import (
+        "context"
+        "errors"
+        "time"
+
+        "github.com/mrangelba/go-exp-rate-limiter/internal/domain"
+        "github.com/mrangelba/go-exp-rate-limiter/internal/domain/entities"
+)
+
+type rateLimitInMemory struct {
+        rates map[string]entities.RateLimiter
+}
+
+func NewRateLimitInMemory() domain.RateLimitCache <span class="cov10" title="6">{
+        return &amp;rateLimitInMemory{
+                rates: make(map[string]entities.RateLimiter),
+        }
+}</span>
+
+func (r *rateLimitInMemory) Set(ctx context.Context, rate entities.RateLimiter, every time.Duration) error <span class="cov6" title="3">{
+        r.rates[rate.Key] = rate
+        return nil
+}</span>
+
+func (r *rateLimitInMemory) Get(ctx context.Context, key string) (*entities.RateLimiter, error) <span class="cov6" title="3">{
+        rate, ok := r.rates[key]
+        if !ok </span><span class="cov1" title="1">{
+                return nil, errors.New("rate limit not found")
+        }</span>
+
+        <span class="cov4" title="2">if rate.Reset &lt; time.Now().Unix() </span><span class="cov1" title="1">{
+                delete(r.rates, key)
+                return nil, errors.New("rate limit expired")
+        }</span>
+
+        <span class="cov1" title="1">return &amp;rate, nil</span>
+}
+</pre>
+		
+		<pre class="file" id="file8" style="display: none">package strategies
+
+import (
+        "context"
+        "log"
+        "time"
+
+        "github.com/mrangelba/go-exp-rate-limiter/internal/domain"
+        "github.com/mrangelba/go-exp-rate-limiter/internal/domain/entities"
+
+        "github.com/redis/go-redis/v9"
+
+        driversRedis "github.com/mrangelba/go-exp-rate-limiter/internal/drivers/cache/redis"
+)
+
+type rateLimitRedis struct {
+        client *redis.Client
+}
+
+func NewRateLimitRedis() domain.RateLimitCache <span class="cov6" title="2">{
+        return &amp;rateLimitRedis{
+                client: driversRedis.GetClient(),
+        }
+}</span>
+
+func (r *rateLimitRedis) Set(ctx context.Context, rate entities.RateLimiter, every time.Duration) error <span class="cov6" title="2">{
+        err := r.client.Set(ctx, rate.Key, rate, every).Err()
+
+        if err != nil </span><span class="cov1" title="1">{
+                log.Println(err)
+        }</span>
+
+        <span class="cov6" title="2">return err</span>
+
+}
+
+func (r *rateLimitRedis) Get(ctx context.Context, key string) (*entities.RateLimiter, error) <span class="cov10" title="3">{
+        val, err := r.client.Get(ctx, key).Result()
+        if err != nil </span><span class="cov1" title="1">{
+                return nil, err
+        }</span>
+
+        <span class="cov6" title="2">var rate entities.RateLimiter
+        err = rate.UnmarshalBinary([]byte(val))
+        if err != nil </span><span class="cov1" title="1">{
+                return nil, err
+        }</span>
+
+        <span class="cov1" title="1">return &amp;rate, nil</span>
+}
+</pre>
+		
+		<pre class="file" id="file9" style="display: none">package strategies
+
+import (
+        "log"
+
+        "github.com/mrangelba/go-exp-rate-limiter/internal/domain"
+)
+
+func GetCacheStrategy(cache string) domain.RateLimitCache <span class="cov10" title="2">{
+        if cache == "redis" </span><span class="cov1" title="1">{
+                log.Println("Using Redis as cache")
+                return NewRateLimitRedis()
+        }</span>
+
+        <span class="cov1" title="1">log.Println("Using InMemory as cache")
+        return NewRateLimitInMemory()</span>
+}
+</pre>
+		
+		<pre class="file" id="file10" style="display: none">package utils
+
+import (
+        "net/http"
+
+        "github.com/gin-gonic/gin"
+)
+
+func MiddlewareToGin(middleware func(next http.Handler) http.Handler) gin.HandlerFunc <span class="cov10" title="2">{
+        return func(gctx *gin.Context) </span><span class="cov10" title="2">{
+                var skip = true
+                var handler http.HandlerFunc = func(http.ResponseWriter, *http.Request) </span><span class="cov1" title="1">{
+                        skip = false
+                }</span>
+                <span class="cov10" title="2">middleware(handler).ServeHTTP(gctx.Writer, gctx.Request)
+                switch </span>{
+                case skip:<span class="cov1" title="1">
+                        gctx.Abort()</span>
+                default:<span class="cov1" title="1">
+                        gctx.Next()</span>
+                }
+        }
+}
+</pre>
+		
+		</div>
+	</body>
+	<script>
+	(function() {
+		var files = document.getElementById('files');
+		var visible;
+		files.addEventListener('change', onChange, false);
+		function select(part) {
+			if (visible)
+				visible.style.display = 'none';
+			visible = document.getElementById(part);
+			if (!visible)
+				return;
+			files.value = part;
+			visible.style.display = 'block';
+			location.hash = part;
+		}
+		function onChange() {
+			select(files.value);
+			window.scrollTo(0, 0);
+		}
+		if (location.hash != "") {
+			select(location.hash.substr(1));
+		}
+		if (!visible) {
+			select("file0");
+		}
+	})();
+	</script>
+</html>

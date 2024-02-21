@@ -5,10 +5,10 @@ import (
 )
 
 type RedisConfig struct {
-	Host     string `json:"addr" env:"REDIS_HOST"`
-	Password string `json:"password" env:"REDIS_PASSWORD"`
-	Port     int    `json:"port" env:"REDIS_PORT"`
-	DB       int    `json:"db" env:"REDIS_DB"`
+	Host     string `json:"host,omitempty" env:"REDIS_HOST"`
+	Password string `json:"password,omitempty" env:"REDIS_PASSWORD"`
+	Port     int    `json:"port,omitempty" env:"REDIS_PORT"`
+	DB       int    `json:"db,omitempty" env:"REDIS_DB"`
 }
 
 func GetRedisConfig() RedisConfig {

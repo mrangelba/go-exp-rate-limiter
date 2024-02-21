@@ -2,7 +2,6 @@ package strategies
 
 import (
 	"context"
-	"encoding/json"
 	"log"
 	"time"
 
@@ -25,29 +24,25 @@ func NewRateLimitRedis() domain.RateLimitCache {
 }
 
 func (r *rateLimitRedis) Set(ctx context.Context, rate entities.RateLimiter, every time.Duration) error {
-	json, err := json.Marshal(rate)
+	err := r.client.Set(ctx, rate.Key, rate, every).Err()
 
 	if err != nil {
-		return err
+		log.Println(err)
 	}
 
-	return r.client.Set(ctx, rate.Key, json, every).Err()
+	return err
+
 }
 
 func (r *rateLimitRedis) Get(ctx context.Context, key string) (*entities.RateLimiter, error) {
 	val, err := r.client.Get(ctx, key).Result()
 	if err != nil {
-		if err != redis.Nil {
-			log.Println("Error reading rate limit for key:", key)
-		}
-
 		return nil, err
 	}
 
 	var rate entities.RateLimiter
-	if err := json.Unmarshal([]byte(val), &rate); err != nil {
-		log.Println("Error unmarshalling rate limit for key:", key)
-
+	err = rate.UnmarshalBinary([]byte(val))
+	if err != nil {
 		return nil, err
 	}
 

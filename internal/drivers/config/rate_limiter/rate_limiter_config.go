@@ -8,25 +8,25 @@ import (
 
 type RateLimiterConfig struct {
 	Default Default `json:"default"`
-	IP      []IP    `json:"ip"`
-	Token   []Token `json:"token"`
+	IP      []IP    `json:"ip,omitempty"`
+	Token   []Token `json:"token,omitempty"`
 }
 
 type Default struct {
-	Requests int `json:"requests"`
-	Every    int `json:"every"`
+	Requests int `json:"requests,omitempty"`
+	Every    int `json:"every,omitempty"`
 }
 
 type IP struct {
-	IP       string `json:"ip"`
-	Requests int    `json:"requests"`
-	Every    int    `json:"every"`
+	IP       string `json:"ip,omitempty"`
+	Requests int    `json:"requests,omitempty"`
+	Every    int    `json:"every,omitempty"`
 }
 
 type Token struct {
-	Token    string `json:"token"`
-	Requests int    `json:"requests"`
-	Every    int    `json:"every"`
+	Token    string `json:"token,omitempty"`
+	Requests int    `json:"requests,omitempty"`
+	Every    int    `json:"every,omitempty"`
 }
 
 // GetRateLimiterConfig returns the rate limiter configuration

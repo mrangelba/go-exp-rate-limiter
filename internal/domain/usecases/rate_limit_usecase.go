@@ -31,7 +31,7 @@ func NewRateLimitUseCase(config config.Config, cache domain.RateLimitCache) Rate
 }
 
 func (uc *rateLimitUseCase) VerifyLimit(ctx context.Context, key string) bool {
-	_, err := uc.cache.Get(ctx, key)
+	rate, err := uc.cache.Get(ctx, key)
 
 	if err != nil {
 		every := uc.config.RateLimiter.Default.Every
@@ -69,7 +69,7 @@ func (uc *rateLimitUseCase) VerifyLimit(ctx context.Context, key string) bool {
 		return uc.VerifyLimit(ctx, key)
 	}
 
-	limit, err := uc.validateCacheLimit(ctx, key)
+	limit, err := uc.validateCacheLimit(ctx, rate)
 
 	if err != nil {
 		log.Println(err)
@@ -79,12 +79,7 @@ func (uc *rateLimitUseCase) VerifyLimit(ctx context.Context, key string) bool {
 	return limit
 }
 
-func (uc *rateLimitUseCase) validateCacheLimit(ctx context.Context, key string) (bool, error) {
-	rate, err := uc.cache.Get(ctx, key)
-	if err != nil {
-		return false, err
-	}
-
+func (uc *rateLimitUseCase) validateCacheLimit(ctx context.Context, rate *entities.RateLimiter) (bool, error) {
 	if rate.Remaining <= 0 && rate.Every > 0 {
 		return false, nil
 	}

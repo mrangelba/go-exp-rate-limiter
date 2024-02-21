@@ -6,3 +6,8 @@ build-dev:
 
 build-pkg:
 	docker build -f build/package/Dockerfile .
+
+test-coverage:
+	go test -v ./... -covermode=count -coverpkg=./... -coverprofile coverage/coverage.out
+	go tool cover -html coverage/coverage.out -o coverage/coverage.html
+	go tool cover -func coverage/coverage.out
